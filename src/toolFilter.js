@@ -49,13 +49,22 @@ export function applyToolFilter(server) {
     if (unknown.length) process.stderr.write(`tradingview-mcp: TV_TOOLS lists unknown tools: ${unknown.join(', ')}\n`);
   }
 
+  let description = 'Manage which TradingView tools are enabled. Some tools are disabled by default to save context. Call action=list to see enabled/disabled tools per group, and action=enable (with tools and/or groups) to turn on a disabled tool when the user\'s request needs it. Use action=disable to turn tools off again.';
+  if (whitelist.length) {
+    const disabled = Object.entries(snapshot())
+      .filter(([, g]) => g.disabled.length)
+      .map(([group, g]) => `${group}: ${g.disabled.join(', ')}`);
+    if (disabled.length) description += ` Disabled by default — ${disabled.join('; ')}`;
+  }
+  const groupNames = [...new Set([...registry.values()].map(e => e.group))].filter(g => g !== 'other');
+
   server.tool(
     'tv_tools',
-    'Manage which TradingView tools are enabled. Some tools are disabled by default to save context. Call action=list to see enabled/disabled tools per group, and action=enable (with tools and/or groups) to turn on a disabled tool when the user\'s request needs it. Use action=disable to turn tools off again.',
+    description,
     {
       action: z.enum(['list', 'enable', 'disable']).describe('list | enable | disable'),
       tools: z.array(z.string()).optional().describe('Tool names to enable/disable'),
-      groups: z.array(z.string()).optional().describe('Groups to enable/disable: chart, data, pine, ui, alerts, replay, batch, pane, tab, watchlist, indicators, drawing, capture, health'),
+      groups: z.array(z.string()).optional().describe(`Groups to enable/disable: ${groupNames.join(', ')}`),
     },
     async ({ action, tools, groups }) => {
       try {
