@@ -14,6 +14,7 @@ import { registerWatchlistTools } from './tools/watchlist.js';
 import { registerUiTools } from './tools/ui.js';
 import { registerPaneTools } from './tools/pane.js';
 import { registerTabTools } from './tools/tab.js';
+import { installToolFilter, applyToolFilter } from './toolFilter.js';
 
 const server = new McpServer(
   {
@@ -22,7 +23,7 @@ const server = new McpServer(
     description: 'AI-assisted TradingView chart analysis and Pine Script development via Chrome DevTools Protocol',
   },
   {
-    instructions: `TradingView MCP — 84 tools for reading and controlling a live TradingView Desktop chart.
+    instructions: `TradingView MCP — up to 84 tools for reading and controlling a live TradingView Desktop chart. By default only a subset may be enabled (env TV_TOOLS whitelist); disabled tools can be turned on at runtime with tv_tools.
 
 TOOL SELECTION GUIDE — use this to pick the right tool:
 
@@ -59,6 +60,7 @@ Alerts: alert_create, alert_list, alert_delete
 Launch: tv_launch → auto-detect and start TradingView with CDP on any platform
 Panes: pane_list, pane_set_layout (s, 2h, 2v, 4, 6, 8), pane_focus, pane_set_symbol
 Tabs: tab_list, tab_new, tab_close, tab_switch
+Tool access: tv_tools → action=list shows enabled/disabled tools per group; action=enable (tools/groups) turns on a disabled tool when the request needs it; action=disable turns tools off
 
 CONTEXT MANAGEMENT:
 - ALWAYS use summary=true on data_get_ohlcv
@@ -68,6 +70,8 @@ CONTEXT MANAGEMENT:
 - Call chart_get_state ONCE at start, reuse entity IDs`,
   }
 );
+
+installToolFilter(server);
 
 // Register all tool groups
 registerHealthTools(server);
@@ -84,6 +88,7 @@ registerWatchlistTools(server);
 registerUiTools(server);
 registerPaneTools(server);
 registerTabTools(server);
+applyToolFilter(server);
 
 // Startup notice (stderr so it doesn't interfere with MCP stdio protocol)
 process.stderr.write('⚠  tradingview-mcp  |  Unofficial tool. Not affiliated with TradingView Inc. or Anthropic.\n');

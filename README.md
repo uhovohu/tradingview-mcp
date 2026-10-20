@@ -132,6 +132,28 @@ Add to your Claude Code MCP config (`~/.claude/.mcp.json` or project `.mcp.json`
 
 Replace `/path/to/tradingview-mcp` with your actual path.
 
+### Limiting enabled tools (`TV_TOOLS`)
+
+Set `TV_TOOLS` to a comma-separated whitelist of tool names to enable only those tools; all others are registered but disabled (saves context). If unset or empty, all tools are enabled. Unknown names are warned about on stderr.
+
+The always-on `tv_tools` tool manages this at runtime: `action=list` shows enabled/disabled tools per group, `action=enable` / `action=disable` take `tools` (names) and/or `groups`. Groups: `chart`, `data`, `pine`, `ui`, `alerts`, `replay`, `batch`, `pane`, `tab`, `watchlist`, `indicators`, `drawing`, `capture`, `health`.
+
+Example Claude Code config:
+
+```json
+{
+  "mcpServers": {
+    "tradingview": {
+      "command": "node",
+      "args": ["/path/to/tradingview-mcp/src/server.js"],
+      "env": {
+        "TV_TOOLS": "tv_health_check,tv_launch,chart_get_state,chart_set_symbol,chart_set_timeframe,chart_manage_indicator,chart_scroll_to_date,symbol_search,quote_get,data_get_ohlcv,data_get_study_values,data_get_pine_lines,data_get_pine_labels,data_get_pine_tables,data_get_pine_boxes,capture_screenshot,draw_shape,draw_list,draw_remove_one,draw_clear,watchlist_get,indicator_toggle_visibility,ui_click,ui_open_panel,ui_fullscreen,ui_keyboard,ui_type_text,ui_hover,ui_scroll,ui_mouse_click,ui_find_element"
+      }
+    }
+  }
+}
+```
+
 ### 4. Verify
 
 Ask Claude: *"Use tv_health_check to verify TradingView is connected"*
